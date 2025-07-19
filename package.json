@@ -1,0 +1,17 @@
+{
+  "name": "logger-smartify",
+  "version": "1.0.0",
+  "description": "A configurable logger using Winston with optional file rotation and custom levels",
+  "main": "index.js",
+  "license": "MIT",
+  "author": "Anji",
+  "keywords": ["logger", "winston", "logging", "rotate", "custom", "debug", "info", "error"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anjireddy502/logger-smartify.git"
+  },
+  "dependencies": {
+    "winston": "^3.9.0",
+    "winston-daily-rotate-file": "^4.7.1"
+  }
+}
