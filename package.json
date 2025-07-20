@@ -5,6 +5,10 @@
   "main": "index.js",
   "license": "MIT",
   "author": "Anji",
+  "files": [
+  "index.js",
+  "middleware.js"
+],
   "keywords": [
     "logger",
     "winston",
