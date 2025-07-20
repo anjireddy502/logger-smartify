@@ -1,30 +1,169 @@
-npm install logger-smartify
+## logger-smartify
+
+
+A highly customizable logger utility built on top of winston with:
+
+Console & file logging with rotation
+* Multiple argument support in logs
+* Contextual log labeling
+* Optional integrations with:
+
+**Logstash**
+
+**Fluentd**
+
+**AWS CloudWatch**
+
 ```bash
-const createLogger = require("logger-smartify");
+npm install logger-smartify
+
+```
+### Features
+
+* Custom log levels: error, warn, info, debug
+
+* Context prefix for each log
+
+* Colorized & formatted outputs
+
+* File logging with daily rotation
+
+* External transports:
+
+* Logstash
+
+* Fluentd
+
+* AWS CloudWatch
+
+* Pass multiple messages & objects in a single log call
+
+### Configuration Options
+
+| Option       | Type      | Default                | Description                                                              |
+| ------------ | --------- | ---------------------- | ------------------------------------------------------------------------ |
+| `level`      | `string`  | `'debug'`              | Logging level: `'error'`, `'warn'`, `'info'`, `'debug'`                  |
+| `enableFile` | `boolean` | `false`                | Enable rotating file logs                                                |
+| `context`    | `string`  | -                      | Prefix logs with this context                                            |
+| `format`     | `string`  | `'combined'`           | Log format: `'simple'`, `'json'`, `'combined'`                           |
+| `silent`     | `boolean` | `false`                | Suppress all logs                                                        |
+| `env`        | `string`  | `process.env.NODE_ENV` | Force environment setting                                                |
+| `logstash`   | `object`  | -                      | `{ host, port }` Logstash config                                         |
+| `fluentd`    | `object`  | -                      | `{ tag, host, port }` Fluentd config                                     |
+| `cloudWatch` | `object`  | -                      | AWS CloudWatch config `{ logGroupName, logStreamName, awsRegion, etc. }` |
+
+
+### Usage
+
+**Import & Initialize**
+
+```bash
+
+const createLogger = require('logger-smartify');
 
 const logger = createLogger({
-  level: "debug",             // Log level: error, warn, info, debug
-  enableFile: true,           // Enable file logging
-  logDir: "logs",             // Directory for log files
-  filename: "app-%DATE%.log", // File name pattern
-  context: "exampleController", // optional 
-   format = "combined",    // combined or simple
+  level: 'debug',
+  context: 'UserService',
+  enableFile: true
 });
 
-logger.info("Logger initialized");
-logger.error("Something went wrong");
-logger.debug("Debugging info");
-
-this file logDir, filename is optional in comment lines and enableFile true/false
-
-### silent (boolean)
-Suppresses all logging. Useful for testing environments where output is unwanted.
 ```
+
+**Example Logs**
+
 ```bash
-// Multiple strings and objects
-logger.info("Order placed", "for user", { userId: 1 }, { orderId: 123 });
+logger.info("User created", { userId: 123 });
+logger.error("Failed to create user", { error: new Error("DB connection failed") });
+logger.debug("Debug details", { query: "SELECT * FROM users" });
 
-// Keyed objects
-logger.info("Order processed", { user: { id: 1, name: 'Anji' }, order: { id: 123 } });
+// Multiple arguments
+logger.info("Processing order", "for user", { userId: 1 }, { orderId: 456 });
+```
+
+### External Transports (External Transports are optional)
+
+**Logstash**
+
+```bash
+logstash: {
+  host: 'localhost',
+  port: 5000
+}
 
 ```
+**Fluentd**
+
+```bash
+fluentd: {
+  tag: 'app-tag',
+  host: 'localhost',
+  port: 24224
+}
+
+```
+
+**AWS CloudWatch**
+
+```bash
+cloudWatch: {
+  logGroupName: 'MyAppLogs',
+  logStreamName: 'UserServiceStream',
+  awsRegion: 'us-east-1'
+}
+```
+**File Logging**
+
+```bash
+enableFile: true
+```
+
+Logs stored in ./logs/
+
+* Daily rotated files:
+
+      Max size: 20MB
+
+      Retention: 14 days  
+
+
+**Log Formats**
+
+simple: Plain text
+
+json: Structured JSON
+
+combined: Timestamp + level + colorized + meta data
+
+```bash
+2025-07-20T12:30:45.123Z [info]: [UserService] User created {"userId":123}
+
+```
+
+### Example Configuration with All Options
+
+```bash
+const logger = createLogger({
+  level: 'debug',
+  context: 'PaymentService',
+  enableFile: true,
+  format: 'combined',
+  logstash: { host: 'localhost', port: 5000 },
+  fluentd: { tag: 'payment-service', host: 'localhost', port: 24224 },
+  cloudWatch: {
+    logGroupName: 'AppLogs',
+    logStreamName: 'PaymentService',
+    awsRegion: 'us-east-1'
+  }
+});
+```
+
+**Environment-Aware**
+
+Defaults to warn level when NODE_ENV=production
+
+Use env: 'development' to override
+
+
+### License
+
+MIT
