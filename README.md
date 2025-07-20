@@ -7,7 +7,7 @@ const logger = createLogger({
   enableFile: true,           // Enable file logging
   logDir: "logs",             // Directory for log files
   filename: "app-%DATE%.log", // File name pattern
-   context: "exampleController", // optional 
+  context: "exampleController", // optional 
 });
 
 logger.info("Logger initialized");
