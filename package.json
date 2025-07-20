@@ -24,10 +24,7 @@
     "url": "https://github.com/anjireddy502/logger-smartify.git"
   },
   "dependencies": {
-    "fluent-logger": "^3.4.1",
     "winston": "^3.9.0",
-    "winston-cloudwatch": "^6.3.0",
-    "winston-daily-rotate-file": "^4.7.1",
-    "winston-logstash": "^1.2.1"
+    "winston-daily-rotate-file": "^4.7.1"
   }
 }
