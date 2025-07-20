@@ -1,5 +1,6 @@
 const winston = require("winston");
 require("winston-daily-rotate-file");
+require('dotenv').config();
 
 // Define custom log levels and colors
 const customLevels = {
@@ -31,20 +32,23 @@ function createLogger(options = {}) {
     const { level = "info",
         enableFile = false,
         context,
-        format = "simple",
+        format = "combined",
         silent = false,
         env = process.env.NODE_ENV,
     } = options;
 
-    const contextFormat = options.context
-        ? winston.format((info) => {
-            // Only prefix if context is a non-empty string
-            if (typeof options.context === "string" && options.context.trim()) {
-                info.message = `[${options.context.trim()}] ${info.message}`;
-            }
-            return info;
-        })()
-        : winston.format((info) => info)(); // No-op
+    const contextFormat = winston.format((info) => {
+        // If message is an object, stringify it
+        if (typeof info.message === 'object') {
+            info.message = JSON.stringify(info.message, null, 2);
+        }
+
+        if (typeof options.context === "string" && options.context.trim()) {
+            info.message = `[${options.context.trim()}] ${info.message}`;
+        }
+        return info;
+    })();
+
 
     const formatPresets = {
         simple: winston.format.simple(),
