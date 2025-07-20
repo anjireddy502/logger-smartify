@@ -8,11 +8,6 @@ Console & file logging with rotation
 * Contextual log labeling
 * Optional integrations with:
 
-**Logstash**
-
-**Fluentd**
-
-**AWS CloudWatch**
 
 ```bash
 npm install logger-smartify
@@ -27,14 +22,6 @@ npm install logger-smartify
 * Colorized & formatted outputs
 
 * File logging with daily rotation
-
-* External transports:
-
-* Logstash
-
-* Fluentd
-
-* AWS CloudWatch
 
 * Pass multiple messages & objects in a single log call
 
@@ -80,37 +67,6 @@ logger.debug("Debug details", { query: "SELECT * FROM users" });
 logger.info("Processing order", "for user", { userId: 1 }, { orderId: 456 });
 ```
 
-### External Transports (External Transports are optional)
-
-**Logstash**
-
-```bash
-logstash: {
-  host: 'localhost',
-  port: 5000
-}
-
-```
-**Fluentd**
-
-```bash
-fluentd: {
-  tag: 'app-tag',
-  host: 'localhost',
-  port: 24224
-}
-
-```
-
-**AWS CloudWatch**
-
-```bash
-cloudWatch: {
-  logGroupName: 'MyAppLogs',
-  logStreamName: 'UserServiceStream',
-  awsRegion: 'us-east-1'
-}
-```
 **File Logging**
 
 ```bash
@@ -144,16 +100,9 @@ combined: Timestamp + level + colorized + meta data
 ```bash
 const logger = createLogger({
   level: 'debug',
-  context: 'PaymentService',
+  context: 'ExampleService',
   enableFile: true,
   format: 'combined',
-  logstash: { host: 'localhost', port: 5000 },
-  fluentd: { tag: 'payment-service', host: 'localhost', port: 24224 },
-  cloudWatch: {
-    logGroupName: 'AppLogs',
-    logStreamName: 'PaymentService',
-    awsRegion: 'us-east-1'
-  }
 });
 ```
 

@@ -2,23 +2,31 @@ const winston = require("winston");
 require("winston-daily-rotate-file");
 require('dotenv').config();
 
+// Define custom log levels and colors
 const customLevels = {
-    levels: { error: 0, warn: 1, info: 2, debug: 3 },
-    colors: { error: "red", warn: "yellow", info: "green", debug: "blue" },
+    levels: {
+        error: 0,
+        warn: 1,
+        info: 2,
+        debug: 3,
+    },
+    colors: {
+        error: "red",
+        warn: "yellow",
+        info: "green",
+        debug: "blue",
+    },
 };
 
 winston.addColors(customLevels.colors);
 
 /**
  * @param {Object} options
- * @param {string} [options.level="debug"]
+ * @param {string} [options.level="info"]
  * @param {boolean} [options.enableFile=false]
- * @param {string} [options.context]
- * @param {string} [options.format="simple"]
- * @param {string} [options.env]
- * @param {Object} [options.logstash] - { host, port }
- * @param {Object} [options.fluentd] - { tag, host, port }
- * @param {Object} [options.cloudWatch] - cloudwatch transport config
+ * @param {string} [options.context] - Prefix all logs with [context]
+ * @param {string} [options.format="simple"] - "simple", "json", "combined"
+ * @param {string} [options.env] - Overrides default behavior via environment label
  */
 function createLogger(options = {}) {
     const {
@@ -28,9 +36,6 @@ function createLogger(options = {}) {
         format = "combined",
         silent = false,
         env = process.env.NODE_ENV,
-        logstash,
-        fluentd,
-        cloudWatch,
     } = options;
 
     const contextFormat = winston.format((info) => {
@@ -66,7 +71,6 @@ function createLogger(options = {}) {
     const transports = [
         new winston.transports.Console({ format: finalFormat })
     ];
-
     if (silent) {
         transports.forEach((t) => (t.silent = true));
     }
@@ -79,7 +83,10 @@ function createLogger(options = {}) {
                 maxSize: "20m",
                 maxFiles: "14d",
                 format: formatPresets[format],
-            }),
+            })
+        );
+
+        transports.push(
             new winston.transports.DailyRotateFile({
                 filename: "logs/application-%DATE%.log",
                 datePattern: "YYYY-MM-DD",
@@ -93,43 +100,6 @@ function createLogger(options = {}) {
         );
     }
 
-    // Optional: Logstash
-    if (logstash) {
-        const LogstashTransport = require('winston-logstash');
-        transports.push(new LogstashTransport({
-            port: logstash.port || 5000,
-            host: logstash.host || '127.0.0.1',
-            node_name: context || 'application',
-        }));
-    }
-
-    // Optional: Fluentd
-    if (fluentd) {
-        const fluent = require('fluent-logger');
-        fluent.configure(fluentd.tag || 'app', {
-            host: fluentd.host || 'localhost',
-            port: fluentd.port || 24224,
-            timeout: 3.0,
-            reconnectInterval: 600000
-        });
-
-        transports.push(new winston.transports.Stream({
-            stream: fluent.sender,
-        }));
-    }
-
-    // Optional: CloudWatch
-    if (cloudWatch) {
-        const WinstonCloudWatch = require('winston-cloudwatch');
-        transports.push(new WinstonCloudWatch({
-            logGroupName: cloudWatch.logGroupName,
-            logStreamName: cloudWatch.logStreamName || context || 'application',
-            awsRegion: cloudWatch.awsRegion || 'us-east-1',
-            jsonMessage: true,
-            ...cloudWatch
-        }));
-    }
-
     const logger = winston.createLogger({
         levels: customLevels.levels,
         level: resolvedLevel,
@@ -139,6 +109,7 @@ function createLogger(options = {}) {
     // Wrap logger methods to support multiple arguments
     Object.keys(customLevels.levels).forEach(level => {
         const originalMethod = logger[level];
+
         logger[level] = function (...args) {
             let messageParts = [];
             let meta = {};
