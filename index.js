@@ -29,7 +29,8 @@ winston.addColors(customLevels.colors);
  * @param {string} [options.env] - Overrides default behavior via environment label
  */
 function createLogger(options = {}) {
-    const { level = "info",
+    const {
+        level = "debug",
         enableFile = false,
         context,
         format = "combined",
@@ -38,17 +39,14 @@ function createLogger(options = {}) {
     } = options;
 
     const contextFormat = winston.format((info) => {
-        // If message is an object, stringify it
         if (typeof info.message === 'object') {
             info.message = JSON.stringify(info.message, null, 2);
         }
-
         if (typeof options.context === "string" && options.context.trim()) {
             info.message = `[${options.context.trim()}] ${info.message}`;
         }
         return info;
     })();
-
 
     const formatPresets = {
         simple: winston.format.simple(),
@@ -87,9 +85,7 @@ function createLogger(options = {}) {
                 format: formatPresets[format],
             })
         );
-    }
 
-    if (enableFile) {
         transports.push(
             new winston.transports.DailyRotateFile({
                 filename: "logs/application-%DATE%.log",
@@ -104,11 +100,34 @@ function createLogger(options = {}) {
         );
     }
 
-    return winston.createLogger({
+    const logger = winston.createLogger({
         levels: customLevels.levels,
         level: resolvedLevel,
         transports,
     });
+
+    // Wrap logger methods to support multiple arguments
+    Object.keys(customLevels.levels).forEach(level => {
+        const originalMethod = logger[level];
+
+        logger[level] = function (...args) {
+            let messageParts = [];
+            let meta = {};
+
+            args.forEach(arg => {
+                if (typeof arg === 'string') {
+                    messageParts.push(arg);
+                } else if (typeof arg === 'object' && arg !== null) {
+                    meta = { ...meta, ...arg };
+                }
+            });
+
+            const message = messageParts.join(' ');
+            return originalMethod.call(logger, message, meta);
+        };
+    });
+
+    return logger;
 }
 
 module.exports = createLogger;
