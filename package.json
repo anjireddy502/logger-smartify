@@ -1,14 +1,14 @@
 {
   "name": "logger-smartify",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A configurable logger using Winston with optional file rotation and custom levels",
   "main": "index.js",
   "license": "MIT",
   "author": "Anji",
   "files": [
-  "index.js",
-  "middleware.js"
-],
+    "index.js",
+    "middleware.js"
+  ],
   "keywords": [
     "logger",
     "winston",
