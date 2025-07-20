@@ -14,3 +14,6 @@ logger.error("Something went wrong");
 logger.debug("Debugging info");
 
 this file logDir, filename is optional in comment lines and enableFile true/false
+
+### silent (boolean)
+Suppresses all logging. Useful for testing environments where output is unwanted.

@@ -20,23 +20,70 @@ const customLevels = {
 winston.addColors(customLevels.colors);
 
 /**
- * Create a configurable logger.
- * @param {Object} options - Logger configuration options.
- * @param {string} [options.level="info"] - Log level.
- * @param {boolean} [options.enableFile=false] - Whether to enable file logging.
- * @returns {winston.Logger} Configured logger instance.
+ * @param {Object} options
+ * @param {string} [options.level="info"]
+ * @param {boolean} [options.enableFile=false]
+ * @param {string} [options.context] - Prefix all logs with [context]
+ * @param {string} [options.format="simple"] - "simple", "json", "combined"
+ * @param {string} [options.env] - Overrides default behavior via environment label
  */
 function createLogger(options = {}) {
-    const { level = "info", enableFile = false } = options;
+    const { level = "info",
+        enableFile = false,
+        context,
+        format = "simple",
+        silent = false,
+        env = process.env.NODE_ENV,
+    } = options;
+
+    const contextFormat = options.context
+        ? winston.format((info) => {
+            // Only prefix if context is a non-empty string
+            if (typeof options.context === "string" && options.context.trim()) {
+                info.message = `[${options.context.trim()}] ${info.message}`;
+            }
+            return info;
+        })()
+        : winston.format((info) => info)(); // No-op
+
+    const formatPresets = {
+        simple: winston.format.simple(),
+        json: winston.format.json(),
+        combined: winston.format.combine(
+            winston.format.timestamp(),
+            winston.format.printf(({ timestamp, level, message, ...meta }) => {
+                return `${timestamp} [${level}]: ${message}` +
+                    (Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : "");
+            })
+        ),
+    };
+
+    const finalFormat = winston.format.combine(
+        winston.format.colorize(),
+        contextFormat,
+        formatPresets[format] || formatPresets.simple
+    );
+
+    const resolvedLevel = env === "production" ? "warn" : level;
 
     const transports = [
-        new winston.transports.Console({
-            format: winston.format.combine(
-                winston.format.colorize(),
-                winston.format.simple()
-            ),
-        }),
+        new winston.transports.Console({ format: finalFormat })
     ];
+    if (silent) {
+        transports.forEach((t) => (t.silent = true));
+    }
+
+    if (enableFile) {
+        transports.push(
+            new winston.transports.DailyRotateFile({
+                filename: `logs/${context || "application"}-%DATE%.log`,
+                datePattern: "YYYY-MM-DD",
+                maxSize: "20m",
+                maxFiles: "14d",
+                format: formatPresets[format],
+            })
+        );
+    }
 
     if (enableFile) {
         transports.push(
@@ -55,7 +102,7 @@ function createLogger(options = {}) {
 
     return winston.createLogger({
         levels: customLevels.levels,
-        level,
+        level: resolvedLevel,
         transports,
     });
 }
