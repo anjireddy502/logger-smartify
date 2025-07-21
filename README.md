@@ -35,9 +35,6 @@ npm install logger-smartify
 | `format`     | `string`  | `'combined'`           | Log format: `'simple'`, `'json'`, `'combined'`                           |
 | `silent`     | `boolean` | `false`                | Suppress all logs                                                        |
 | `env`        | `string`  | `process.env.NODE_ENV` | Force environment setting                                                |
-| `logstash`   | `object`  | -                      | `{ host, port }` Logstash config                                         |
-| `fluentd`    | `object`  | -                      | `{ tag, host, port }` Fluentd config                                     |
-| `cloudWatch` | `object`  | -                      | AWS CloudWatch config `{ logGroupName, logStreamName, awsRegion, etc. }` |
 
 
 ### Usage
